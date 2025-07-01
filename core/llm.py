@@ -1,9 +1,7 @@
 
 
 def generate_survey(description, intentions):
-    from llm.models import SurveyModel
     from llm.prompts.survey_gen import survey_prompt
-    from schema import SurveySchema
     from langchain_core.messages import HumanMessage
     from schema import OnboardingSurvey, onboarding_schema_format_instructions
     from llm.models import survey_model
