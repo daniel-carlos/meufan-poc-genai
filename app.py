@@ -1,142 +1,102 @@
 import streamlit as st
 from uuid import uuid4
-import time
-import persist
-import config
 from streamlit_local_storage import LocalStorage
-import llm
 
 localS = LocalStorage()
 
-st.set_page_config(
-    page_title=config.TITLE,
-)
+# Configuração da página
+st.set_page_config(page_title="Formulário de Identificação", page_icon="📝")
 
-st.markdown("""
-    <style>
-        .stAppToolbar {visibility: hidden;}
-    </style>
-""", unsafe_allow_html=True)
+# Título da aplicação
+st.title("📝 Formulário de Identificação")
+st.markdown("---")
 
-def new_session():
-    st.session_state.stage = "password"
-    st.session_state.password_invalid = False
-    st.session_state.chat_id = f"{uuid4()}"
-    st.session_state.history = []
-
-def confirm_password():
-    if st.session_state.password == config.PASSWORD:
-        st.session_state.password_invalid = False
-        st.session_state.stage = "identity"
-        localS.setItem("password_valid", "1")
-        st.session_state.password = None
-    else:
-        st.session_state.password_invalid = True
-        localS.setItem("password_valid", "0")
-
-def save_chat():
-    persist.save_chat(st.session_state.user_id, st.session_state.chat_id)
-    localS.setItem("user_id", st.session_state.user_id)
-    st.session_state.stage = "chat"
-
-def convert_to_stream(text):
-    for char in text:
-        yield char
-        time.sleep(0.01)
-
-def save_feedback(index):
-    st.session_state.history[index]["feedback"] = st.session_state[f"{index}"]
-    persist.save_feedback(
-        st.session_state.chat_id,
-        st.session_state.history[index]["id"],
-        st.session_state.history[index]["feedback"],
+# Formulário
+with st.form("formulario_identificacao"):
+    st.subheader("Por favor, responda às seguintes perguntas:")
+    
+    # Pergunta 1
+    nome = st.text_input(
+        "**Quem é você?**",
+        placeholder="Digite seu nome ou como gostaria de ser chamado..."
     )
-    st.toast('Feedback registrado!')
+    
+    # Pergunta 2
+    st.markdown("**Qual é sua intenção aqui?** *(Selecione 1 ou 2 opções)*")
+    
+    opcoes_intencao = {
+        "me_expressar": "Me expressar melhor",
+        "guardar_memorias": "Guardar minhas memórias",
+        "me_conhecer": "Me conhecer mais",
+        "me_distrair": "Me distrair com perguntas legais",
+        "ter_ideias": "Ter ideias novas",
+        "inspirar_outros": "Inspirar outras pessoas",
+        "relaxar_refletir": "Relaxar e refletir"
+    }
+    
+    # Verificar quantos checkboxes estão marcados
+    intencoes_selecionadas = []
+    checkboxes_values = {}
+    
+    # Primeiro loop para capturar os valores atuais
+    for key, label in opcoes_intencao.items():
+        if key in st.session_state:
+            checkboxes_values[key] = st.session_state[key]
+        else:
+            checkboxes_values[key] = False
+    
+    # Contar quantos estão selecionados
+    count_selected = sum(checkboxes_values.values())
+    
+    # Segundo loop para criar os checkboxes com disabled quando necessário
+    for key, label in opcoes_intencao.items():
+        # Desabilitar se 2 já estão selecionados E este não está selecionado
+        disabled = count_selected >= 2 and not checkboxes_values[key]
+        
+        if st.checkbox(label, key=key, disabled=disabled):
+            intencoes_selecionadas.append(label)
+    
+    # Botão de envio
+    submitted = st.form_submit_button("Enviar", type="primary")
+    
+    # Processamento do formulário
+    if submitted:
+        if nome and intencoes_selecionadas:
+            # Validar quantidade de opções selecionadas (redundante, mas mantido por segurança)
+            if len(intencoes_selecionadas) > 2:
+                st.error("❌ Por favor, selecione no máximo 2 opções!")
+            else:
+                # Gerar ID único para o usuário
+                user_id = str(uuid4())
+                
+                # Salvar dados no local storage
+                user_data = {
+                    "id": user_id,
+                    "nome": nome,
+                    "intencoes": intencoes_selecionadas
+                }
+                
+                try:
+                    localS.setItem("user_data", user_data)
+                    st.success("✅ Obrigado pelas informações!")
+                    st.balloons()
+                    
+                    # Mostrar dados salvos
+                    st.markdown("### Informações registradas:")
+                    st.write(f"**Nome:** {nome}")
+                    st.write(f"**Intenções:** {', '.join(intencoes_selecionadas)}")
+                    st.write(f"**ID:** {user_id}")
+                    
+                except Exception as e:
+                    st.error(f"Erro ao salvar dados: {e}")
+                
+        else:
+            if not nome:
+                st.error("❌ Por favor, preencha seu nome!")
+            if not intencoes_selecionadas:
+                st.error("❌ Por favor, selecione pelo menos uma intenção!")
 
-if "stage" not in st.session_state:
-    password_valid_saved = localS.getItem("password_valid")
-    user_id_saved = localS.getItem("user_id")
+# Rodapé
+st.markdown("---")
+st.caption("Formulário criado com Streamlit")
 
-    new_session()
-
-    if password_valid_saved == "1":
-        st.session_state.stage = "identity"
-
-    if user_id_saved:
-        st.session_state.user_id = user_id_saved
-        st.session_state.stage = "chat"
-        save_chat()
-
-def logout():
-    localS.deleteAll()
-    del st.session_state["stage"]
-    new_session()
-
-st.title(config.TITLE)
-st.subheader(config.SUBTITLE)
-
-if st.session_state.stage == "chat":
-    st.button("Sair", on_click=logout)
-
-if st.session_state.stage == "password":
-    password = st.text_input("Digite a senha para conseguir acessar o sistema", type='password')
-
-    if password:
-        st.session_state.password = password
-        st.button("Confirmar", on_click=confirm_password)
-        if st.session_state.password_invalid:
-            st.error("Senha incorreta")
-
-if st.session_state.stage == "identity":
-    user_id = st.text_input("Se identifique para começar a conversar.")
-
-    if user_id:
-        st.session_state.user_id = user_id
-        st.button("Começar", on_click=save_chat)
-
-if st.session_state.stage == "chat":
-    for i, message in enumerate(st.session_state.history):
-        with st.chat_message(message["role"]):
-            st.write(message["content"])
-            if message["role"] == "assistant":
-                feedback = message.get("feedback", None)
-                st.session_state[f"feedback_{i}"] = feedback
-                st.feedback(
-                    "thumbs",
-                    key=f"{i}",
-                    disabled=feedback is not None,
-                    on_change=save_feedback,
-                    args=[i],
-                )
-
-    if prompt := st.chat_input("Diga alguma coisa"):
-        with st.chat_message("user"):
-            st.write(prompt)
-        st.session_state.history.append({"id": f"{uuid4()}", "role": "human", "content": prompt})
-        persist.save_message(
-            st.session_state.chat_id,
-            st.session_state.history[-1]["id"],
-            st.session_state.history[-1]["role"],
-            st.session_state.history[-1]["content"],
-            0,
-            0,
-        )
-        with st.chat_message("assistant"):
-            response_data = llm.generate_response(prompt, st.session_state.history[:-1])
-            # print(response_data)
-            response = st.write_stream(convert_to_stream(response_data['content']))
-            st.feedback(
-                "thumbs",
-                key=f"{len(st.session_state.history)}",
-                on_change=save_feedback,
-                args=[len(st.session_state.history)],
-            )
-        st.session_state.history.append({"id": f"{uuid4()}", "role": "assistant", "content": response_data['content']})
-        persist.save_message(
-            st.session_state.chat_id,
-            st.session_state.history[-1]["id"],
-            st.session_state.history[-1]["role"],
-            st.session_state.history[-1]["content"],
-            response_data['input_tokens'],
-            response_data['output_tokens'],
-        )
