@@ -1,15 +1,15 @@
 import streamlit as st
-from core import setup_page, FormularioIdentificacao
+from core import setup_page, FormularioOnboarding
 
 # Configuração da página
 setup_page()
 
 # Título da aplicação
-st.title("📝 Formulário de Identificação")
+st.title("📝 Formulário de Onboarding")
 st.markdown("---")
 
 # Inicialização do formulário
-formulario = FormularioIdentificacao()
+formulario = FormularioOnboarding()
 
 # Formulário
 with st.form("formulario_identificacao"):

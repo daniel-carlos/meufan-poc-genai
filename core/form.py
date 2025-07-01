@@ -2,7 +2,7 @@ import streamlit as st
 from .config import OPCOES_INTENCAO
 from .storage import StorageManager
 
-class FormularioIdentificacao:
+class FormularioOnboarding:
     def __init__(self):
         self.storage_manager = StorageManager()
         
