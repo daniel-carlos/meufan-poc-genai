@@ -34,6 +34,8 @@ O usuário fornecerá uma descrição e intenções. Você deve usar essas infor
 ## Saída Esperada
 {output_format}
 
+---
+
 Pense passo a passo.
 """
 

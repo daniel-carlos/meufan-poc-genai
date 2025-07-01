@@ -1,39 +1,30 @@
+import json
 from dotenv import load_dotenv
-load_dotenv()
+from langchain_core.messages import HumanMessage
 from schema import OnboardingSurvey, onboarding_schema_format_instructions
 from llm.models import survey_model
 from llm.prompts.survey_gen import survey_prompt
 
-chain = survey_prompt | survey_model.with_structured_output(OnboardingSurvey)
+load_dotenv()
 
-onboarding_survey: OnboardingSurvey = chain.invoke(
-    {
-        "description": "Sou um músico de 18 anos apaixonado por violino.",
-        "intentions": "me expressar melhor | me distrair com perguntas legais",
-        "output_format": onboarding_schema_format_instructions,
-    }
-)
+messages = [
+    HumanMessage(
+        content=survey_prompt.format(
+            description="Sou um músico de 18 anos apaixonado por violino.",
+            intentions="me expressar melhor | me distrair com perguntas legais",
+            output_format=onboarding_schema_format_instructions,
+        )
+    )
+]
 
-def pretty_print_survey(survey: OnboardingSurvey):
-    print(f"Title: {survey.title}")
-    print(f"Customer Profile: {survey.customer_profile}")
-    print("Profile Questions:")
-    for question in survey.profile_questions:
-        print(f"- {question}")
-    print("General Questions:")
-    for question in survey.general_questions:
-        print(f"- {question}")
-    print("Customer Questions:")
-    for question in survey.customer_questions:
-        print(f"- {question}")
-    print("Interest Tags:")
-    for tag in survey.interest_tags:
-        print(f"- {tag.value}")
+response = survey_model.with_structured_output(OnboardingSurvey, include_raw=True).invoke(messages)
+onboarding : OnboardingSurvey = response['parsed']
+usage_metadata = response['raw'].usage_metadata
 
+print("Resposta do modelo:\n", onboarding.model_dump_json(indent=4))
+print()
+print("Metadados:")
+print("input:", json.dumps(usage_metadata['input_tokens'], ensure_ascii=False, indent=4))
+print("output:", json.dumps(usage_metadata['output_tokens'], ensure_ascii=False, indent=4))
+print("total:", json.dumps(usage_metadata['total_tokens'], ensure_ascii=False, indent=4))
 
-pretty_print_survey(onboarding_survey)
-
-
-# pydantic_parser = PydanticOutputParser(pydantic_object=OnboardingSurvey)
-# format_instructions = pydantic_parser.get_format_instructions()
-# print(format_instructions)
