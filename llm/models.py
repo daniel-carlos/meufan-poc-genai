@@ -1,14 +1,11 @@
 from langchain_groq import ChatGroq
+from langchain_aws import ChatBedrockConverse
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
-survey_model = ChatGroq(
-    model="deepseek-r1-distill-llama-70b",
-    temperature=0.9,
+survey_model = ChatBedrockConverse(
+    model=os.environ.get("SURVEY_MODEL_ID", "amazon.nova-lite-v1:0"),
+    temperature=os.environ.get("SURVEY_MODEL_TEMPERATURE", 0.9),
     max_tokens=None,
-    reasoning_format="parsed",
-    cache=False,
-    streaming=False,
-    timeout=None,
-    max_retries=2,
-    api_key=os.environ["GROQ_API_KEY"],
 )

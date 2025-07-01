@@ -1,7 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel, Field
 from enum import Enum
-
+from langchain.output_parsers import PydanticOutputParser
 
 class InterestTag(str, Enum):
     EMOCOES = "emoções"
@@ -52,7 +52,9 @@ class OnboardingSurvey(BaseModel):
     )
     interest_tags: list[InterestTag] = Field(
         ...,
-        description="Tags de interesse associadas a esse usuário.",
+        description="Tags de interesse associadas a esse usuário. Lista com 3 itens",
         min_length=3,
         max_length=3,
     )
+
+onboarding_schema_format_instructions = PydanticOutputParser(pydantic_object=OnboardingSurvey).get_format_instructions()
