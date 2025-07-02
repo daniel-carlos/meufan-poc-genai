@@ -7,11 +7,570 @@
       "service": "meufan-poc",
       "provider": {
         "name": "aws",
-        "runtime": "python3.9"
+        "runtime": "python3.9",
+        "apiGateway": {
+          "apiKeys": "<REDACTED>",
+          "usagePlan": {
+            "quota": {
+              "limit": 5000,
+              "period": "MONTH"
+            },
+            "throttle": {
+              "burstLimit": 200,
+              "rateLimit": 100
+            }
+          }
+        },
+        "stage": "dev",
+        "region": "us-east-1",
+        "versionFunctions": true,
+        "compiledCloudFormationTemplate": {
+          "AWSTemplateFormatVersion": "2010-09-09",
+          "Description": "The AWS CloudFormation template for this Serverless application",
+          "Resources": {
+            "GetUnderscoresurveyLogGroup": {
+              "Type": "AWS::Logs::LogGroup",
+              "Properties": {
+                "LogGroupName": "/aws/lambda/meufan-poc-dev-get_survey"
+              }
+            },
+            "ListUnderscoresurveysLogGroup": {
+              "Type": "AWS::Logs::LogGroup",
+              "Properties": {
+                "LogGroupName": "/aws/lambda/meufan-poc-dev-list_surveys"
+              }
+            },
+            "IamRoleLambdaExecution": {
+              "Type": "AWS::IAM::Role",
+              "Properties": {
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": [
+                          "lambda.amazonaws.com"
+                        ]
+                      },
+                      "Action": [
+                        "sts:AssumeRole"
+                      ]
+                    }
+                  ]
+                },
+                "Policies": [
+                  {
+                    "PolicyName": {
+                      "Fn::Join": [
+                        "-",
+                        [
+                          "meufan-poc",
+                          "dev",
+                          "lambda"
+                        ]
+                      ]
+                    },
+                    "PolicyDocument": {
+                      "Version": "2012-10-17",
+                      "Statement": [
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:CreateLogStream",
+                            "logs:CreateLogGroup",
+                            "logs:TagResource"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/meufan-poc-dev*:*"
+                            }
+                          ]
+                        },
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:PutLogEvents"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/meufan-poc-dev*:*:*"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "Path": "/",
+                "RoleName": {
+                  "Fn::Join": [
+                    "-",
+                    [
+                      "meufan-poc",
+                      "dev",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "lambdaRole"
+                    ]
+                  ]
+                }
+              }
+            },
+            "GetUnderscoresurveyLambdaFunction": {
+              "Type": "AWS::Lambda::Function",
+              "Properties": {
+                "Code": {
+                  "S3Bucket": "serverless-framework-deployments-us-east-1-5c9d7fbd-9295",
+                  "S3Key": "serverless/meufan-poc/dev/1751460521357-2025-07-02T12:48:41.357Z/meufan-poc.zip"
+                },
+                "Handler": "handler.get_survey",
+                "Runtime": "python3.9",
+                "FunctionName": "meufan-poc-dev-get_survey",
+                "MemorySize": 1024,
+                "Timeout": 6,
+                "Role": {
+                  "Fn::GetAtt": [
+                    "IamRoleLambdaExecution",
+                    "Arn"
+                  ]
+                }
+              },
+              "DependsOn": [
+                "GetUnderscoresurveyLogGroup"
+              ]
+            },
+            "ListUnderscoresurveysLambdaFunction": {
+              "Type": "AWS::Lambda::Function",
+              "Properties": {
+                "Code": {
+                  "S3Bucket": "serverless-framework-deployments-us-east-1-5c9d7fbd-9295",
+                  "S3Key": "serverless/meufan-poc/dev/1751460521357-2025-07-02T12:48:41.357Z/meufan-poc.zip"
+                },
+                "Handler": "handler.list_surveys",
+                "Runtime": "python3.9",
+                "FunctionName": "meufan-poc-dev-list_surveys",
+                "MemorySize": 1024,
+                "Timeout": 6,
+                "Role": {
+                  "Fn::GetAtt": [
+                    "IamRoleLambdaExecution",
+                    "Arn"
+                  ]
+                }
+              },
+              "DependsOn": [
+                "ListUnderscoresurveysLogGroup"
+              ]
+            },
+            "GetUnderscoresurveyLambdaVersionPVZXXJIyuiTCZuUF4EngrHDkcNZx4huOtSSIVrho8": {
+              "Type": "AWS::Lambda::Version",
+              "DeletionPolicy": "Retain",
+              "Properties": {
+                "FunctionName": {
+                  "Ref": "GetUnderscoresurveyLambdaFunction"
+                },
+                "CodeSha256": "9kEioKrZwUCszwq85OAs8oWwqHhTGOWm5W9hf8zuQMA="
+              }
+            },
+            "ListUnderscoresurveysLambdaVersiontfy4vqTLWHu9uqt7SAXlWdReBrn7aoffmz7tqLrpFuI": {
+              "Type": "AWS::Lambda::Version",
+              "DeletionPolicy": "Retain",
+              "Properties": {
+                "FunctionName": {
+                  "Ref": "ListUnderscoresurveysLambdaFunction"
+                },
+                "CodeSha256": "9kEioKrZwUCszwq85OAs8oWwqHhTGOWm5W9hf8zuQMA="
+              }
+            },
+            "ApiGatewayRestApi": {
+              "Type": "AWS::ApiGateway::RestApi",
+              "Properties": {
+                "Name": "dev-meufan-poc",
+                "EndpointConfiguration": {
+                  "Types": [
+                    "EDGE"
+                  ]
+                },
+                "Policy": ""
+              }
+            },
+            "ApiGatewayResourceSurvey": {
+              "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                "ParentId": {
+                  "Fn::GetAtt": [
+                    "ApiGatewayRestApi",
+                    "RootResourceId"
+                  ]
+                },
+                "PathPart": "survey",
+                "RestApiId": {
+                  "Ref": "ApiGatewayRestApi"
+                }
+              }
+            },
+            "ApiGatewayResourceSurveyIdVar": {
+              "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                "ParentId": {
+                  "Ref": "ApiGatewayResourceSurvey"
+                },
+                "PathPart": "{id}",
+                "RestApiId": {
+                  "Ref": "ApiGatewayRestApi"
+                }
+              }
+            },
+            "ApiGatewayResourceSurveys": {
+              "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                "ParentId": {
+                  "Fn::GetAtt": [
+                    "ApiGatewayRestApi",
+                    "RootResourceId"
+                  ]
+                },
+                "PathPart": "surveys",
+                "RestApiId": {
+                  "Ref": "ApiGatewayRestApi"
+                }
+              }
+            },
+            "ApiGatewayMethodSurveyIdVarGet": {
+              "Type": "AWS::ApiGateway::Method",
+              "Properties": {
+                "HttpMethod": "GET",
+                "RequestParameters": {
+                  "method.request.path.id": true
+                },
+                "ResourceId": {
+                  "Ref": "ApiGatewayResourceSurveyIdVar"
+                },
+                "RestApiId": {
+                  "Ref": "ApiGatewayRestApi"
+                },
+                "ApiKeyRequired": "<REDACTED>",
+                "AuthorizationType": "NONE",
+                "Integration": {
+                  "IntegrationHttpMethod": "POST",
+                  "Type": "AWS_PROXY",
+                  "Uri": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:",
+                        {
+                          "Ref": "AWS::Partition"
+                        },
+                        ":apigateway:",
+                        {
+                          "Ref": "AWS::Region"
+                        },
+                        ":lambda:path/2015-03-31/functions/",
+                        {
+                          "Fn::GetAtt": [
+                            "GetUnderscoresurveyLambdaFunction",
+                            "Arn"
+                          ]
+                        },
+                        "/invocations"
+                      ]
+                    ]
+                  }
+                },
+                "MethodResponses": [],
+                "RequestValidatorId": {
+                  "Ref": "ApiGatewayMeufanpocRequestValidator"
+                }
+              },
+              "DependsOn": [
+                "GetUnderscoresurveyLambdaPermissionApiGateway"
+              ]
+            },
+            "ApiGatewayMethodSurveysGet": {
+              "Type": "AWS::ApiGateway::Method",
+              "Properties": {
+                "HttpMethod": "GET",
+                "RequestParameters": {},
+                "ResourceId": {
+                  "Ref": "ApiGatewayResourceSurveys"
+                },
+                "RestApiId": {
+                  "Ref": "ApiGatewayRestApi"
+                },
+                "ApiKeyRequired": "<REDACTED>",
+                "AuthorizationType": "NONE",
+                "Integration": {
+                  "IntegrationHttpMethod": "POST",
+                  "Type": "AWS_PROXY",
+                  "Uri": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:",
+                        {
+                          "Ref": "AWS::Partition"
+                        },
+                        ":apigateway:",
+                        {
+                          "Ref": "AWS::Region"
+                        },
+                        ":lambda:path/2015-03-31/functions/",
+                        {
+                          "Fn::GetAtt": [
+                            "ListUnderscoresurveysLambdaFunction",
+                            "Arn"
+                          ]
+                        },
+                        "/invocations"
+                      ]
+                    ]
+                  }
+                },
+                "MethodResponses": []
+              },
+              "DependsOn": [
+                "ListUnderscoresurveysLambdaPermissionApiGateway"
+              ]
+            },
+            "ApiGatewayMeufanpocRequestValidator": {
+              "Type": "AWS::ApiGateway::RequestValidator",
+              "Properties": {
+                "RestApiId": {
+                  "Ref": "ApiGatewayRestApi"
+                },
+                "ValidateRequestBody": true,
+                "ValidateRequestParameters": true,
+                "Name": "meufan-poc-dev | Validate request body and querystring parameters"
+              }
+            },
+            "ApiGatewayDeployment1751460511469": {
+              "Type": "AWS::ApiGateway::Deployment",
+              "Properties": {
+                "RestApiId": {
+                  "Ref": "ApiGatewayRestApi"
+                },
+                "StageName": "dev"
+              },
+              "DependsOn": [
+                "ApiGatewayMethodSurveyIdVarGet",
+                "ApiGatewayMethodSurveysGet"
+              ]
+            },
+            "ApiGatewayApiKey1": "<REDACTED>",
+            "ApiGatewayUsagePlan": {
+              "Type": "AWS::ApiGateway::UsagePlan",
+              "DependsOn": "ApiGatewayDeployment1751460511469",
+              "Properties": {
+                "ApiStages": [
+                  {
+                    "ApiId": {
+                      "Ref": "ApiGatewayRestApi"
+                    },
+                    "Stage": "dev"
+                  }
+                ],
+                "Description": "Usage plan for meufan-poc dev stage",
+                "UsagePlanName": "meufan-poc-dev",
+                "Quota": {
+                  "Limit": 5000,
+                  "Period": "MONTH"
+                },
+                "Throttle": {
+                  "BurstLimit": 200,
+                  "RateLimit": 100
+                }
+              }
+            },
+            "ApiGatewayUsagePlanKey1": {
+              "Type": "AWS::ApiGateway::UsagePlanKey",
+              "Properties": {
+                "KeyId": {
+                  "Ref": "ApiGatewayApiKey1"
+                },
+                "KeyType": "API_KEY",
+                "UsagePlanId": {
+                  "Ref": "ApiGatewayUsagePlan"
+                }
+              }
+            },
+            "GetUnderscoresurveyLambdaPermissionApiGateway": {
+              "Type": "AWS::Lambda::Permission",
+              "Properties": {
+                "FunctionName": {
+                  "Fn::GetAtt": [
+                    "GetUnderscoresurveyLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "Action": "lambda:InvokeFunction",
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":execute-api:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":",
+                      {
+                        "Ref": "ApiGatewayRestApi"
+                      },
+                      "/*/*"
+                    ]
+                  ]
+                }
+              }
+            },
+            "ListUnderscoresurveysLambdaPermissionApiGateway": {
+              "Type": "AWS::Lambda::Permission",
+              "Properties": {
+                "FunctionName": {
+                  "Fn::GetAtt": [
+                    "ListUnderscoresurveysLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "Action": "lambda:InvokeFunction",
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":execute-api:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":",
+                      {
+                        "Ref": "ApiGatewayRestApi"
+                      },
+                      "/*/*"
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          "Outputs": {
+            "ServerlessDeploymentBucketName": {
+              "Value": "serverless-framework-deployments-us-east-1-5c9d7fbd-9295",
+              "Export": {
+                "Name": "sls-meufan-poc-dev-ServerlessDeploymentBucketName"
+              }
+            },
+            "GetUnderscoresurveyLambdaFunctionQualifiedArn": {
+              "Description": "Current Lambda function version",
+              "Value": {
+                "Ref": "GetUnderscoresurveyLambdaVersionPVZXXJIyuiTCZuUF4EngrHDkcNZx4huOtSSIVrho8"
+              },
+              "Export": {
+                "Name": "sls-meufan-poc-dev-GetUnderscoresurveyLambdaFunctionQualifiedArn"
+              }
+            },
+            "ListUnderscoresurveysLambdaFunctionQualifiedArn": {
+              "Description": "Current Lambda function version",
+              "Value": {
+                "Ref": "ListUnderscoresurveysLambdaVersiontfy4vqTLWHu9uqt7SAXlWdReBrn7aoffmz7tqLrpFuI"
+              },
+              "Export": {
+                "Name": "sls-meufan-poc-dev-ListUnderscoresurveysLambdaFunctionQualifiedArn"
+              }
+            },
+            "ServiceEndpoint": {
+              "Description": "URL of the service endpoint",
+              "Value": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "https://",
+                    {
+                      "Ref": "ApiGatewayRestApi"
+                    },
+                    ".execute-api.",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ".",
+                    {
+                      "Ref": "AWS::URLSuffix"
+                    },
+                    "/dev"
+                  ]
+                ]
+              },
+              "Export": {
+                "Name": "sls-meufan-poc-dev-ServiceEndpoint"
+              }
+            }
+          }
+        },
+        "vpc": {}
       },
       "functions": {
-        "save_survey": {
-          "handler": "handler.save_survey"
+        "get_survey": {
+          "handler": "handler.get_survey",
+          "events": [
+            {
+              "http": {
+                "path": "survey/{id}",
+                "method": "get",
+                "private": true,
+                "request": {
+                  "parameters": {
+                    "method.request.path.id": true
+                  }
+                },
+                "integration": "AWS_PROXY"
+              }
+            }
+          ],
+          "name": "meufan-poc-dev-get_survey",
+          "package": {},
+          "memory": 1024,
+          "timeout": 6,
+          "runtime": "python3.9",
+          "vpc": {},
+          "versionLogicalId": "GetUnderscoresurveyLambdaVersionPVZXXJIyuiTCZuUF4EngrHDkcNZx4huOtSSIVrho8"
+        },
+        "list_surveys": {
+          "handler": "handler.list_surveys",
+          "events": [
+            {
+              "http": {
+                "path": "surveys",
+                "method": "get",
+                "private": true,
+                "integration": "AWS_PROXY"
+              }
+            }
+          ],
+          "name": "meufan-poc-dev-list_surveys",
+          "package": {},
+          "memory": 1024,
+          "timeout": 6,
+          "runtime": "python3.9",
+          "vpc": {},
+          "versionLogicalId": "ListUnderscoresurveysLambdaVersiontfy4vqTLWHu9uqt7SAXlWdReBrn7aoffmz7tqLrpFuI"
         }
       },
       "package": {
@@ -21,38 +580,1078 @@
           "!__pycache__/**",
           "!test*/**",
           "!.git/**"
-        ]
+        ],
+        "artifactsS3KeyDirname": "serverless/meufan-poc/dev/code-artifacts",
+        "deploymentBucket": "serverless-framework-deployments-us-east-1-5c9d7fbd-9295",
+        "artifact": "D:\\NuageIT\\Projetos\\Meufan\\project\\.serverless\\meufan-poc.zip",
+        "artifactDirectoryName": "serverless/meufan-poc/dev/1751460521357-2025-07-02T12:48:41.357Z"
       }
     },
     "provider": {
       "name": "aws",
-      "runtime": "python3.9"
+      "runtime": "python3.9",
+      "apiGateway": {
+        "apiKeys": "<REDACTED>",
+        "usagePlan": {
+          "quota": {
+            "limit": 5000,
+            "period": "MONTH"
+          },
+          "throttle": {
+            "burstLimit": 200,
+            "rateLimit": 100
+          }
+        }
+      },
+      "stage": "dev",
+      "region": "us-east-1",
+      "versionFunctions": true,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "GetUnderscoresurveyLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/meufan-poc-dev-get_survey"
+            }
+          },
+          "ListUnderscoresurveysLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/meufan-poc-dev-list_surveys"
+            }
+          },
+          "IamRoleLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "meufan-poc",
+                        "dev",
+                        "lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogStream",
+                          "logs:CreateLogGroup",
+                          "logs:TagResource"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/meufan-poc-dev*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/meufan-poc-dev*:*:*"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Path": "/",
+              "RoleName": {
+                "Fn::Join": [
+                  "-",
+                  [
+                    "meufan-poc",
+                    "dev",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    "lambdaRole"
+                  ]
+                ]
+              }
+            }
+          },
+          "GetUnderscoresurveyLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "serverless-framework-deployments-us-east-1-5c9d7fbd-9295",
+                "S3Key": "serverless/meufan-poc/dev/1751460521357-2025-07-02T12:48:41.357Z/meufan-poc.zip"
+              },
+              "Handler": "handler.get_survey",
+              "Runtime": "python3.9",
+              "FunctionName": "meufan-poc-dev-get_survey",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "GetUnderscoresurveyLogGroup"
+            ]
+          },
+          "ListUnderscoresurveysLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "serverless-framework-deployments-us-east-1-5c9d7fbd-9295",
+                "S3Key": "serverless/meufan-poc/dev/1751460521357-2025-07-02T12:48:41.357Z/meufan-poc.zip"
+              },
+              "Handler": "handler.list_surveys",
+              "Runtime": "python3.9",
+              "FunctionName": "meufan-poc-dev-list_surveys",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "ListUnderscoresurveysLogGroup"
+            ]
+          },
+          "GetUnderscoresurveyLambdaVersionPVZXXJIyuiTCZuUF4EngrHDkcNZx4huOtSSIVrho8": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "GetUnderscoresurveyLambdaFunction"
+              },
+              "CodeSha256": "9kEioKrZwUCszwq85OAs8oWwqHhTGOWm5W9hf8zuQMA="
+            }
+          },
+          "ListUnderscoresurveysLambdaVersiontfy4vqTLWHu9uqt7SAXlWdReBrn7aoffmz7tqLrpFuI": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "ListUnderscoresurveysLambdaFunction"
+              },
+              "CodeSha256": "9kEioKrZwUCszwq85OAs8oWwqHhTGOWm5W9hf8zuQMA="
+            }
+          },
+          "ApiGatewayRestApi": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+              "Name": "dev-meufan-poc",
+              "EndpointConfiguration": {
+                "Types": [
+                  "EDGE"
+                ]
+              },
+              "Policy": ""
+            }
+          },
+          "ApiGatewayResourceSurvey": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Fn::GetAtt": [
+                  "ApiGatewayRestApi",
+                  "RootResourceId"
+                ]
+              },
+              "PathPart": "survey",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceSurveyIdVar": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceSurvey"
+              },
+              "PathPart": "{id}",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceSurveys": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Fn::GetAtt": [
+                  "ApiGatewayRestApi",
+                  "RootResourceId"
+                ]
+              },
+              "PathPart": "surveys",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodSurveyIdVarGet": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "GET",
+              "RequestParameters": {
+                "method.request.path.id": true
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceSurveyIdVar"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": "<REDACTED>",
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "GetUnderscoresurveyLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": [],
+              "RequestValidatorId": {
+                "Ref": "ApiGatewayMeufanpocRequestValidator"
+              }
+            },
+            "DependsOn": [
+              "GetUnderscoresurveyLambdaPermissionApiGateway"
+            ]
+          },
+          "ApiGatewayMethodSurveysGet": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "GET",
+              "RequestParameters": {},
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceSurveys"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": "<REDACTED>",
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "ListUnderscoresurveysLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": []
+            },
+            "DependsOn": [
+              "ListUnderscoresurveysLambdaPermissionApiGateway"
+            ]
+          },
+          "ApiGatewayMeufanpocRequestValidator": {
+            "Type": "AWS::ApiGateway::RequestValidator",
+            "Properties": {
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ValidateRequestBody": true,
+              "ValidateRequestParameters": true,
+              "Name": "meufan-poc-dev | Validate request body and querystring parameters"
+            }
+          },
+          "ApiGatewayDeployment1751460511469": {
+            "Type": "AWS::ApiGateway::Deployment",
+            "Properties": {
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "StageName": "dev"
+            },
+            "DependsOn": [
+              "ApiGatewayMethodSurveyIdVarGet",
+              "ApiGatewayMethodSurveysGet"
+            ]
+          },
+          "ApiGatewayApiKey1": "<REDACTED>",
+          "ApiGatewayUsagePlan": {
+            "Type": "AWS::ApiGateway::UsagePlan",
+            "DependsOn": "ApiGatewayDeployment1751460511469",
+            "Properties": {
+              "ApiStages": [
+                {
+                  "ApiId": {
+                    "Ref": "ApiGatewayRestApi"
+                  },
+                  "Stage": "dev"
+                }
+              ],
+              "Description": "Usage plan for meufan-poc dev stage",
+              "UsagePlanName": "meufan-poc-dev",
+              "Quota": {
+                "Limit": 5000,
+                "Period": "MONTH"
+              },
+              "Throttle": {
+                "BurstLimit": 200,
+                "RateLimit": 100
+              }
+            }
+          },
+          "ApiGatewayUsagePlanKey1": {
+            "Type": "AWS::ApiGateway::UsagePlanKey",
+            "Properties": {
+              "KeyId": {
+                "Ref": "ApiGatewayApiKey1"
+              },
+              "KeyType": "API_KEY",
+              "UsagePlanId": {
+                "Ref": "ApiGatewayUsagePlan"
+              }
+            }
+          },
+          "GetUnderscoresurveyLambdaPermissionApiGateway": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "GetUnderscoresurveyLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "ApiGatewayRestApi"
+                    },
+                    "/*/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "ListUnderscoresurveysLambdaPermissionApiGateway": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "ListUnderscoresurveysLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "ApiGatewayRestApi"
+                    },
+                    "/*/*"
+                  ]
+                ]
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": "serverless-framework-deployments-us-east-1-5c9d7fbd-9295",
+            "Export": {
+              "Name": "sls-meufan-poc-dev-ServerlessDeploymentBucketName"
+            }
+          },
+          "GetUnderscoresurveyLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "GetUnderscoresurveyLambdaVersionPVZXXJIyuiTCZuUF4EngrHDkcNZx4huOtSSIVrho8"
+            },
+            "Export": {
+              "Name": "sls-meufan-poc-dev-GetUnderscoresurveyLambdaFunctionQualifiedArn"
+            }
+          },
+          "ListUnderscoresurveysLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "ListUnderscoresurveysLambdaVersiontfy4vqTLWHu9uqt7SAXlWdReBrn7aoffmz7tqLrpFuI"
+            },
+            "Export": {
+              "Name": "sls-meufan-poc-dev-ListUnderscoresurveysLambdaFunctionQualifiedArn"
+            }
+          },
+          "ServiceEndpoint": {
+            "Description": "URL of the service endpoint",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  "https://",
+                  {
+                    "Ref": "ApiGatewayRestApi"
+                  },
+                  ".execute-api.",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  ".",
+                  {
+                    "Ref": "AWS::URLSuffix"
+                  },
+                  "/dev"
+                ]
+              ]
+            },
+            "Export": {
+              "Name": "sls-meufan-poc-dev-ServiceEndpoint"
+            }
+          }
+        }
+      },
+      "vpc": {}
     },
-    "error": {
-      "message": "You are not a member of the Org \"true\". Verify the \"org\" in your Service configuration (e.g. serverless.yml) or that you're providing manually is one your User Account or License Key has access to. Lastly, check the .serverlessrc file in the home directory of your machine to better understand what user account or License Key you are currently using. You can run \"serverless login\" to change the user account or License Key you are using.",
-      "stack": "Error: You are not a member of the Org \"true\". Verify the \"org\" in your Service configuration (e.g. serverless.yml) or that you're providing manually is one your User Account or License Key has access to. Lastly, check the .serverlessrc file in the home directory of your machine to better understand what user account or License Key you are currently using. You can run \"serverless login\" to change the user account or License Key you are using.\n    at Authentication.getAuthenticatedData (file:///C:/Users/danie/.serverless/releases/4.17.1/package/dist/sf-core.js:830:3154)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async routeExistingService (file:///C:/Users/danie/.serverless/releases/4.17.1/package/dist/sf-core.js:836:4701)\n    at async commandOnboarding (file:///C:/Users/danie/.serverless/releases/4.17.1/package/dist/sf-core.js:834:20092)\n    at async _CoreRunner.run (file:///C:/Users/danie/.serverless/releases/4.17.1/package/dist/sf-core.js:1148:6301)\n    at async route (file:///C:/Users/danie/.serverless/releases/4.17.1/package/dist/sf-core.js:1582:2878)\n    at async Object.run (file:///C:/Users/danie/.serverless/releases/4.17.1/package/dist/sf-core.js:1583:3661)\n    at async run2 (file:///C:/Users/danie/.serverless/releases/4.17.1/package/dist/sf-core.js:1583:4815)"
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
     },
-    "serviceRawFile": "service: meufan-poc\n\nprovider:\n  name: aws\n  runtime: python3.9\n\nfunctions:\n  save_survey:\n    handler: handler.save_survey\n\npackage:\n  patterns:\n    - \"!venv/**\"\n    - \"!_ignore/**\"\n    - \"!__pycache__/**\"\n    - \"!test*/**\"\n    - \"!.git/**\"",
-    "command": [],
+    "serviceRawFile": "service: meufan-poc\n\nprovider:\n  name: aws\n  runtime: python3.9\n  apiGateway:\n    apiKeys:\n      - meufanApiKey\n    usagePlan:\n      quota:\n        limit: 5000\n        period: MONTH\n      throttle:\n        burstLimit: 200\n        rateLimit: 100\n\nfunctions:\n  get_survey:\n    handler: handler.get_survey\n    events:\n      - http:\n          path: survey/{id}\n          method: get\n          private: true # Requer API Key\n          request:\n            parameters:\n              paths:\n                id: true\n                \n  list_surveys:\n    handler: handler.list_surveys\n    events:\n      - http:\n          path: surveys\n          method: get\n          private: true # Requer API Key\n\npackage:\n  patterns:\n    - \"!venv/**\"\n    - \"!_ignore/**\"\n    - \"!__pycache__/**\"\n    - \"!test*/**\"\n    - \"!.git/**\"",
+    "command": [
+      "deploy"
+    ],
     "options": {
-      "org": true
+      "aws-profile": "meufan-poc"
     },
-    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:us-east-1:806473340808:stack/meufan-poc-dev/a71e3420-56b1-11f0-bbb4-0e621099342f",
-    "serviceProviderAwsCfStackCreated": "2025-07-01T19:29:06.262Z",
-    "serviceProviderAwsCfStackUpdated": null,
-    "serviceProviderAwsCfStackStatus": "CREATE_COMPLETE",
+    "orgId": "2c4c1d4d-bac2-4e16-8ac2-e33e3c415c56",
+    "orgName": "doliveiranuage",
+    "userId": "wTFmmd5zsx5n2dVpXV",
+    "userName": "doliveiranuage",
+    "serviceProviderAwsAccountId": "244370290471",
+    "serviceProviderAwsCfStackName": "meufan-poc-dev",
+    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:us-east-1:244370290471:stack/meufan-poc-dev/0d9b2ed0-5741-11f0-b73b-1236d4cc6ae3",
+    "serviceProviderAwsCfStackCreated": "2025-07-02T12:35:36.247Z",
+    "serviceProviderAwsCfStackUpdated": "2025-07-02T12:41:15.343Z",
+    "serviceProviderAwsCfStackStatus": "UPDATE_COMPLETE",
     "serviceProviderAwsCfStackOutputs": [
       {
         "OutputKey": "SaveUnderscoresurveyLambdaFunctionQualifiedArn",
-        "OutputValue": "arn:aws:lambda:us-east-1:806473340808:function:meufan-poc-dev-save_survey:2",
+        "OutputValue": "arn:aws:lambda:us-east-1:244370290471:function:meufan-poc-dev-save_survey:2",
         "Description": "Current Lambda function version",
         "ExportName": "sls-meufan-poc-dev-SaveUnderscoresurveyLambdaFunctionQualifiedArn"
       },
       {
+        "OutputKey": "ServiceEndpoint",
+        "OutputValue": "https://b3mvqqmiz9.execute-api.us-east-1.amazonaws.com/dev",
+        "Description": "URL of the service endpoint",
+        "ExportName": "sls-meufan-poc-dev-ServiceEndpoint"
+      },
+      {
         "OutputKey": "ServerlessDeploymentBucketName",
-        "OutputValue": "serverless-framework-deployments-us-east-1-88d12393-0956",
+        "OutputValue": "serverless-framework-deployments-us-east-1-5c9d7fbd-9295",
         "ExportName": "sls-meufan-poc-dev-ServerlessDeploymentBucketName"
       }
-    ]
+    ],
+    "compiledCloudFormationTemplate": {
+      "AWSTemplateFormatVersion": "2010-09-09",
+      "Description": "The AWS CloudFormation template for this Serverless application",
+      "Resources": {
+        "GetUnderscoresurveyLogGroup": {
+          "Type": "AWS::Logs::LogGroup",
+          "Properties": {
+            "LogGroupName": "/aws/lambda/meufan-poc-dev-get_survey"
+          }
+        },
+        "ListUnderscoresurveysLogGroup": {
+          "Type": "AWS::Logs::LogGroup",
+          "Properties": {
+            "LogGroupName": "/aws/lambda/meufan-poc-dev-list_surveys"
+          }
+        },
+        "IamRoleLambdaExecution": {
+          "Type": "AWS::IAM::Role",
+          "Properties": {
+            "AssumeRolePolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": [
+                      "lambda.amazonaws.com"
+                    ]
+                  },
+                  "Action": [
+                    "sts:AssumeRole"
+                  ]
+                }
+              ]
+            },
+            "Policies": [
+              {
+                "PolicyName": {
+                  "Fn::Join": [
+                    "-",
+                    [
+                      "meufan-poc",
+                      "dev",
+                      "lambda"
+                    ]
+                  ]
+                },
+                "PolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "logs:CreateLogStream",
+                        "logs:CreateLogGroup",
+                        "logs:TagResource"
+                      ],
+                      "Resource": [
+                        {
+                          "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/meufan-poc-dev*:*"
+                        }
+                      ]
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "logs:PutLogEvents"
+                      ],
+                      "Resource": [
+                        {
+                          "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/meufan-poc-dev*:*:*"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Path": "/",
+            "RoleName": {
+              "Fn::Join": [
+                "-",
+                [
+                  "meufan-poc",
+                  "dev",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  "lambdaRole"
+                ]
+              ]
+            }
+          }
+        },
+        "GetUnderscoresurveyLambdaFunction": {
+          "Type": "AWS::Lambda::Function",
+          "Properties": {
+            "Code": {
+              "S3Bucket": "serverless-framework-deployments-us-east-1-5c9d7fbd-9295",
+              "S3Key": "serverless/meufan-poc/dev/1751460521357-2025-07-02T12:48:41.357Z/meufan-poc.zip"
+            },
+            "Handler": "handler.get_survey",
+            "Runtime": "python3.9",
+            "FunctionName": "meufan-poc-dev-get_survey",
+            "MemorySize": 1024,
+            "Timeout": 6,
+            "Role": {
+              "Fn::GetAtt": [
+                "IamRoleLambdaExecution",
+                "Arn"
+              ]
+            }
+          },
+          "DependsOn": [
+            "GetUnderscoresurveyLogGroup"
+          ]
+        },
+        "ListUnderscoresurveysLambdaFunction": {
+          "Type": "AWS::Lambda::Function",
+          "Properties": {
+            "Code": {
+              "S3Bucket": "serverless-framework-deployments-us-east-1-5c9d7fbd-9295",
+              "S3Key": "serverless/meufan-poc/dev/1751460521357-2025-07-02T12:48:41.357Z/meufan-poc.zip"
+            },
+            "Handler": "handler.list_surveys",
+            "Runtime": "python3.9",
+            "FunctionName": "meufan-poc-dev-list_surveys",
+            "MemorySize": 1024,
+            "Timeout": 6,
+            "Role": {
+              "Fn::GetAtt": [
+                "IamRoleLambdaExecution",
+                "Arn"
+              ]
+            }
+          },
+          "DependsOn": [
+            "ListUnderscoresurveysLogGroup"
+          ]
+        },
+        "GetUnderscoresurveyLambdaVersionPVZXXJIyuiTCZuUF4EngrHDkcNZx4huOtSSIVrho8": {
+          "Type": "AWS::Lambda::Version",
+          "DeletionPolicy": "Retain",
+          "Properties": {
+            "FunctionName": {
+              "Ref": "GetUnderscoresurveyLambdaFunction"
+            },
+            "CodeSha256": "9kEioKrZwUCszwq85OAs8oWwqHhTGOWm5W9hf8zuQMA="
+          }
+        },
+        "ListUnderscoresurveysLambdaVersiontfy4vqTLWHu9uqt7SAXlWdReBrn7aoffmz7tqLrpFuI": {
+          "Type": "AWS::Lambda::Version",
+          "DeletionPolicy": "Retain",
+          "Properties": {
+            "FunctionName": {
+              "Ref": "ListUnderscoresurveysLambdaFunction"
+            },
+            "CodeSha256": "9kEioKrZwUCszwq85OAs8oWwqHhTGOWm5W9hf8zuQMA="
+          }
+        },
+        "ApiGatewayRestApi": {
+          "Type": "AWS::ApiGateway::RestApi",
+          "Properties": {
+            "Name": "dev-meufan-poc",
+            "EndpointConfiguration": {
+              "Types": [
+                "EDGE"
+              ]
+            },
+            "Policy": ""
+          }
+        },
+        "ApiGatewayResourceSurvey": {
+          "Type": "AWS::ApiGateway::Resource",
+          "Properties": {
+            "ParentId": {
+              "Fn::GetAtt": [
+                "ApiGatewayRestApi",
+                "RootResourceId"
+              ]
+            },
+            "PathPart": "survey",
+            "RestApiId": {
+              "Ref": "ApiGatewayRestApi"
+            }
+          }
+        },
+        "ApiGatewayResourceSurveyIdVar": {
+          "Type": "AWS::ApiGateway::Resource",
+          "Properties": {
+            "ParentId": {
+              "Ref": "ApiGatewayResourceSurvey"
+            },
+            "PathPart": "{id}",
+            "RestApiId": {
+              "Ref": "ApiGatewayRestApi"
+            }
+          }
+        },
+        "ApiGatewayResourceSurveys": {
+          "Type": "AWS::ApiGateway::Resource",
+          "Properties": {
+            "ParentId": {
+              "Fn::GetAtt": [
+                "ApiGatewayRestApi",
+                "RootResourceId"
+              ]
+            },
+            "PathPart": "surveys",
+            "RestApiId": {
+              "Ref": "ApiGatewayRestApi"
+            }
+          }
+        },
+        "ApiGatewayMethodSurveyIdVarGet": {
+          "Type": "AWS::ApiGateway::Method",
+          "Properties": {
+            "HttpMethod": "GET",
+            "RequestParameters": {
+              "method.request.path.id": true
+            },
+            "ResourceId": {
+              "Ref": "ApiGatewayResourceSurveyIdVar"
+            },
+            "RestApiId": {
+              "Ref": "ApiGatewayRestApi"
+            },
+            "ApiKeyRequired": "<REDACTED>",
+            "AuthorizationType": "NONE",
+            "Integration": {
+              "IntegrationHttpMethod": "POST",
+              "Type": "AWS_PROXY",
+              "Uri": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":apigateway:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":lambda:path/2015-03-31/functions/",
+                    {
+                      "Fn::GetAtt": [
+                        "GetUnderscoresurveyLambdaFunction",
+                        "Arn"
+                      ]
+                    },
+                    "/invocations"
+                  ]
+                ]
+              }
+            },
+            "MethodResponses": [],
+            "RequestValidatorId": {
+              "Ref": "ApiGatewayMeufanpocRequestValidator"
+            }
+          },
+          "DependsOn": [
+            "GetUnderscoresurveyLambdaPermissionApiGateway"
+          ]
+        },
+        "ApiGatewayMethodSurveysGet": {
+          "Type": "AWS::ApiGateway::Method",
+          "Properties": {
+            "HttpMethod": "GET",
+            "RequestParameters": {},
+            "ResourceId": {
+              "Ref": "ApiGatewayResourceSurveys"
+            },
+            "RestApiId": {
+              "Ref": "ApiGatewayRestApi"
+            },
+            "ApiKeyRequired": "<REDACTED>",
+            "AuthorizationType": "NONE",
+            "Integration": {
+              "IntegrationHttpMethod": "POST",
+              "Type": "AWS_PROXY",
+              "Uri": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":apigateway:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":lambda:path/2015-03-31/functions/",
+                    {
+                      "Fn::GetAtt": [
+                        "ListUnderscoresurveysLambdaFunction",
+                        "Arn"
+                      ]
+                    },
+                    "/invocations"
+                  ]
+                ]
+              }
+            },
+            "MethodResponses": []
+          },
+          "DependsOn": [
+            "ListUnderscoresurveysLambdaPermissionApiGateway"
+          ]
+        },
+        "ApiGatewayMeufanpocRequestValidator": {
+          "Type": "AWS::ApiGateway::RequestValidator",
+          "Properties": {
+            "RestApiId": {
+              "Ref": "ApiGatewayRestApi"
+            },
+            "ValidateRequestBody": true,
+            "ValidateRequestParameters": true,
+            "Name": "meufan-poc-dev | Validate request body and querystring parameters"
+          }
+        },
+        "ApiGatewayDeployment1751460511469": {
+          "Type": "AWS::ApiGateway::Deployment",
+          "Properties": {
+            "RestApiId": {
+              "Ref": "ApiGatewayRestApi"
+            },
+            "StageName": "dev"
+          },
+          "DependsOn": [
+            "ApiGatewayMethodSurveyIdVarGet",
+            "ApiGatewayMethodSurveysGet"
+          ]
+        },
+        "ApiGatewayApiKey1": "<REDACTED>",
+        "ApiGatewayUsagePlan": {
+          "Type": "AWS::ApiGateway::UsagePlan",
+          "DependsOn": "ApiGatewayDeployment1751460511469",
+          "Properties": {
+            "ApiStages": [
+              {
+                "ApiId": {
+                  "Ref": "ApiGatewayRestApi"
+                },
+                "Stage": "dev"
+              }
+            ],
+            "Description": "Usage plan for meufan-poc dev stage",
+            "UsagePlanName": "meufan-poc-dev",
+            "Quota": {
+              "Limit": 5000,
+              "Period": "MONTH"
+            },
+            "Throttle": {
+              "BurstLimit": 200,
+              "RateLimit": 100
+            }
+          }
+        },
+        "ApiGatewayUsagePlanKey1": {
+          "Type": "AWS::ApiGateway::UsagePlanKey",
+          "Properties": {
+            "KeyId": {
+              "Ref": "ApiGatewayApiKey1"
+            },
+            "KeyType": "API_KEY",
+            "UsagePlanId": {
+              "Ref": "ApiGatewayUsagePlan"
+            }
+          }
+        },
+        "GetUnderscoresurveyLambdaPermissionApiGateway": {
+          "Type": "AWS::Lambda::Permission",
+          "Properties": {
+            "FunctionName": {
+              "Fn::GetAtt": [
+                "GetUnderscoresurveyLambdaFunction",
+                "Arn"
+              ]
+            },
+            "Action": "lambda:InvokeFunction",
+            "Principal": "apigateway.amazonaws.com",
+            "SourceArn": {
+              "Fn::Join": [
+                "",
+                [
+                  "arn:",
+                  {
+                    "Ref": "AWS::Partition"
+                  },
+                  ":execute-api:",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  ":",
+                  {
+                    "Ref": "AWS::AccountId"
+                  },
+                  ":",
+                  {
+                    "Ref": "ApiGatewayRestApi"
+                  },
+                  "/*/*"
+                ]
+              ]
+            }
+          }
+        },
+        "ListUnderscoresurveysLambdaPermissionApiGateway": {
+          "Type": "AWS::Lambda::Permission",
+          "Properties": {
+            "FunctionName": {
+              "Fn::GetAtt": [
+                "ListUnderscoresurveysLambdaFunction",
+                "Arn"
+              ]
+            },
+            "Action": "lambda:InvokeFunction",
+            "Principal": "apigateway.amazonaws.com",
+            "SourceArn": {
+              "Fn::Join": [
+                "",
+                [
+                  "arn:",
+                  {
+                    "Ref": "AWS::Partition"
+                  },
+                  ":execute-api:",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  ":",
+                  {
+                    "Ref": "AWS::AccountId"
+                  },
+                  ":",
+                  {
+                    "Ref": "ApiGatewayRestApi"
+                  },
+                  "/*/*"
+                ]
+              ]
+            }
+          }
+        }
+      },
+      "Outputs": {
+        "ServerlessDeploymentBucketName": {
+          "Value": "serverless-framework-deployments-us-east-1-5c9d7fbd-9295",
+          "Export": {
+            "Name": "sls-meufan-poc-dev-ServerlessDeploymentBucketName"
+          }
+        },
+        "GetUnderscoresurveyLambdaFunctionQualifiedArn": {
+          "Description": "Current Lambda function version",
+          "Value": {
+            "Ref": "GetUnderscoresurveyLambdaVersionPVZXXJIyuiTCZuUF4EngrHDkcNZx4huOtSSIVrho8"
+          },
+          "Export": {
+            "Name": "sls-meufan-poc-dev-GetUnderscoresurveyLambdaFunctionQualifiedArn"
+          }
+        },
+        "ListUnderscoresurveysLambdaFunctionQualifiedArn": {
+          "Description": "Current Lambda function version",
+          "Value": {
+            "Ref": "ListUnderscoresurveysLambdaVersiontfy4vqTLWHu9uqt7SAXlWdReBrn7aoffmz7tqLrpFuI"
+          },
+          "Export": {
+            "Name": "sls-meufan-poc-dev-ListUnderscoresurveysLambdaFunctionQualifiedArn"
+          }
+        },
+        "ServiceEndpoint": {
+          "Description": "URL of the service endpoint",
+          "Value": {
+            "Fn::Join": [
+              "",
+              [
+                "https://",
+                {
+                  "Ref": "ApiGatewayRestApi"
+                },
+                ".execute-api.",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ".",
+                {
+                  "Ref": "AWS::URLSuffix"
+                },
+                "/dev"
+              ]
+            ]
+          },
+          "Export": {
+            "Name": "sls-meufan-poc-dev-ServiceEndpoint"
+          }
+        }
+      }
+    }
   }
 }

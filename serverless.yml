@@ -3,10 +3,37 @@ service: meufan-poc
 provider:
   name: aws
   runtime: python3.9
+  apiGateway:
+    apiKeys:
+      - meufanApiKey
+    usagePlan:
+      quota:
+        limit: 5000
+        period: MONTH
+      throttle:
+        burstLimit: 200
+        rateLimit: 100
 
 functions:
-  save_survey:
-    handler: handler.save_survey
+  get_survey:
+    handler: handler.get_survey
+    events:
+      - http:
+          path: survey/{id}
+          method: get
+          private: true # Requer API Key
+          request:
+            parameters:
+              paths:
+                id: true
+                
+  list_surveys:
+    handler: handler.list_surveys
+    events:
+      - http:
+          path: surveys
+          method: get
+          private: true # Requer API Key
 
 package:
   patterns:
