@@ -1,0 +1,17 @@
+service: meufan-poc
+
+provider:
+  name: aws
+  runtime: python3.9
+
+functions:
+  save_survey:
+    handler: handler.save_survey
+
+package:
+  patterns:
+    - "!venv/**"
+    - "!_ignore/**"
+    - "!__pycache__/**"
+    - "!test*/**"
+    - "!.git/**"

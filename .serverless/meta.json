@@ -1,0 +1,58 @@
+{
+  "D:\\NuageIT\\Projetos\\Meufan\\project\\serverless.yml": {
+    "versionFramework": "4.17.1",
+    "servicePath": "D:\\NuageIT\\Projetos\\Meufan\\project\\serverless.yml",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "service": "meufan-poc",
+      "provider": {
+        "name": "aws",
+        "runtime": "python3.9"
+      },
+      "functions": {
+        "save_survey": {
+          "handler": "handler.save_survey"
+        }
+      },
+      "package": {
+        "patterns": [
+          "!venv/**",
+          "!_ignore/**",
+          "!__pycache__/**",
+          "!test*/**",
+          "!.git/**"
+        ]
+      }
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "python3.9"
+    },
+    "error": {
+      "message": "You are not a member of the Org \"true\". Verify the \"org\" in your Service configuration (e.g. serverless.yml) or that you're providing manually is one your User Account or License Key has access to. Lastly, check the .serverlessrc file in the home directory of your machine to better understand what user account or License Key you are currently using. You can run \"serverless login\" to change the user account or License Key you are using.",
+      "stack": "Error: You are not a member of the Org \"true\". Verify the \"org\" in your Service configuration (e.g. serverless.yml) or that you're providing manually is one your User Account or License Key has access to. Lastly, check the .serverlessrc file in the home directory of your machine to better understand what user account or License Key you are currently using. You can run \"serverless login\" to change the user account or License Key you are using.\n    at Authentication.getAuthenticatedData (file:///C:/Users/danie/.serverless/releases/4.17.1/package/dist/sf-core.js:830:3154)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async routeExistingService (file:///C:/Users/danie/.serverless/releases/4.17.1/package/dist/sf-core.js:836:4701)\n    at async commandOnboarding (file:///C:/Users/danie/.serverless/releases/4.17.1/package/dist/sf-core.js:834:20092)\n    at async _CoreRunner.run (file:///C:/Users/danie/.serverless/releases/4.17.1/package/dist/sf-core.js:1148:6301)\n    at async route (file:///C:/Users/danie/.serverless/releases/4.17.1/package/dist/sf-core.js:1582:2878)\n    at async Object.run (file:///C:/Users/danie/.serverless/releases/4.17.1/package/dist/sf-core.js:1583:3661)\n    at async run2 (file:///C:/Users/danie/.serverless/releases/4.17.1/package/dist/sf-core.js:1583:4815)"
+    },
+    "serviceRawFile": "service: meufan-poc\n\nprovider:\n  name: aws\n  runtime: python3.9\n\nfunctions:\n  save_survey:\n    handler: handler.save_survey\n\npackage:\n  patterns:\n    - \"!venv/**\"\n    - \"!_ignore/**\"\n    - \"!__pycache__/**\"\n    - \"!test*/**\"\n    - \"!.git/**\"",
+    "command": [],
+    "options": {
+      "org": true
+    },
+    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:us-east-1:806473340808:stack/meufan-poc-dev/a71e3420-56b1-11f0-bbb4-0e621099342f",
+    "serviceProviderAwsCfStackCreated": "2025-07-01T19:29:06.262Z",
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": "CREATE_COMPLETE",
+    "serviceProviderAwsCfStackOutputs": [
+      {
+        "OutputKey": "SaveUnderscoresurveyLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:us-east-1:806473340808:function:meufan-poc-dev-save_survey:2",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-meufan-poc-dev-SaveUnderscoresurveyLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "ServerlessDeploymentBucketName",
+        "OutputValue": "serverless-framework-deployments-us-east-1-88d12393-0956",
+        "ExportName": "sls-meufan-poc-dev-ServerlessDeploymentBucketName"
+      }
+    ]
+  }
+}

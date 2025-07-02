@@ -1,0 +1,202 @@
+{
+  "service": {
+    "service": "meufan-poc",
+    "serviceObject": {
+      "name": "meufan-poc"
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "python3.9",
+      "stage": "dev",
+      "region": "us-east-1",
+      "versionFunctions": true,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "SaveUnderscoresurveyLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/meufan-poc-dev-save_survey"
+            }
+          },
+          "IamRoleLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "meufan-poc",
+                        "dev",
+                        "lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogStream",
+                          "logs:CreateLogGroup",
+                          "logs:TagResource"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/meufan-poc-dev*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/meufan-poc-dev*:*:*"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Path": "/",
+              "RoleName": {
+                "Fn::Join": [
+                  "-",
+                  [
+                    "meufan-poc",
+                    "dev",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    "lambdaRole"
+                  ]
+                ]
+              }
+            }
+          },
+          "SaveUnderscoresurveyLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "serverless-framework-deployments-us-east-1-88d12393-0956",
+                "S3Key": "serverless/meufan-poc/dev/1751398137910-2025-07-01T19:28:57.910Z/meufan-poc.zip"
+              },
+              "Handler": "handler.save_survey",
+              "Runtime": "python3.9",
+              "FunctionName": "meufan-poc-dev-save_survey",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "SaveUnderscoresurveyLogGroup"
+            ]
+          },
+          "SaveUnderscoresurveyLambdaVersion63a3z2NnVrA2OoBkfvmQpChrOeRvNDmCjyvOj98sPsw": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "SaveUnderscoresurveyLambdaFunction"
+              },
+              "CodeSha256": "M93py+GjIyf27yWsy6UZ0jBGWM0Zcr3IOtXciL1vPYA="
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": "serverless-framework-deployments-us-east-1-88d12393-0956",
+            "Export": {
+              "Name": "sls-meufan-poc-dev-ServerlessDeploymentBucketName"
+            }
+          },
+          "SaveUnderscoresurveyLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "SaveUnderscoresurveyLambdaVersion63a3z2NnVrA2OoBkfvmQpChrOeRvNDmCjyvOj98sPsw"
+            },
+            "Export": {
+              "Name": "sls-meufan-poc-dev-SaveUnderscoresurveyLambdaFunctionQualifiedArn"
+            }
+          }
+        }
+      },
+      "vpc": {}
+    },
+    "pluginsData": {},
+    "functions": {
+      "save_survey": {
+        "handler": "handler.save_survey",
+        "events": [],
+        "name": "meufan-poc-dev-save_survey",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "python3.9",
+        "vpc": {},
+        "versionLogicalId": "SaveUnderscoresurveyLambdaVersion63a3z2NnVrA2OoBkfvmQpChrOeRvNDmCjyvOj98sPsw"
+      }
+    },
+    "configValidationMode": "warn",
+    "serviceFilename": "serverless",
+    "initialServerlessConfig": {
+      "service": "meufan-poc",
+      "provider": {
+        "$ref": "$[\"service\"][\"provider\"]"
+      },
+      "functions": {
+        "$ref": "$[\"service\"][\"functions\"]"
+      },
+      "package": {
+        "patterns": [
+          "!venv/**",
+          "!_ignore/**",
+          "!__pycache__/**",
+          "!test*/**",
+          "!.git/**"
+        ],
+        "artifactsS3KeyDirname": "serverless/meufan-poc/dev/code-artifacts",
+        "deploymentBucket": "serverless-framework-deployments-us-east-1-88d12393-0956",
+        "artifact": "D:\\NuageIT\\Projetos\\Meufan\\project\\.serverless\\meufan-poc.zip",
+        "artifactDirectoryName": "serverless/meufan-poc/dev/1751398137910-2025-07-01T19:28:57.910Z"
+      }
+    },
+    "appId": null,
+    "orgId": null,
+    "layers": {},
+    "artifact": "D:\\NuageIT\\Projetos\\Meufan\\project\\.serverless\\meufan-poc.zip"
+  },
+  "package": {
+    "artifactDirectoryName": "serverless/meufan-poc/dev/1751398137910-2025-07-01T19:28:57.910Z",
+    "artifact": "meufan-poc.zip"
+  }
+}
