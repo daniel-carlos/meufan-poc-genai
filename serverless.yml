@@ -13,6 +13,21 @@ provider:
       throttle:
         burstLimit: 200
         rateLimit: 100
+  environment:
+    ONBOARDING_TABLE: lista_onboarding-${opt:stage, 'dev'}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        Fn::GetAtt:
+          - OnboardingTable
+          - Arn
 
 functions:
   get_survey:
@@ -42,3 +57,17 @@ package:
     - "!__pycache__/**"
     - "!test*/**"
     - "!.git/**"
+
+resources:
+  Resources:
+    OnboardingTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.ONBOARDING_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH

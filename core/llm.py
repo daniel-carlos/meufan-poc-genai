@@ -7,9 +7,12 @@ def generate_survey(description, intentions):
     from llm.models import survey_model
     from llm.prompts.survey_gen import survey_prompt
 
-    # Initialize the survey model
+    onboarding = None
+    usage_metadata = None
+
+    
     messages = [
-    HumanMessage(
+        HumanMessage(
             content=survey_prompt.format(
                 description=description,
                 intentions=" | ".join(intentions),
@@ -19,7 +22,9 @@ def generate_survey(description, intentions):
     ]
 
     response = survey_model.with_structured_output(OnboardingSurvey, include_raw=True).invoke(messages)
-    onboarding : OnboardingSurvey = response['parsed']
+    onboarding: OnboardingSurvey = response['parsed']
+    print("Onboarding\n", onboarding)
+    print("Raw Response\n", response['raw'])
     usage_metadata = response['raw'].usage_metadata
-
+        
     return onboarding, usage_metadata

@@ -71,6 +71,23 @@
                       "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/meufan-poc-dev*:*:*"
                     }
                   ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "OnboardingTable",
+                      "Arn"
+                    ]
+                  }
                 }
               ]
             }
@@ -97,13 +114,18 @@
       "Properties": {
         "Code": {
           "S3Bucket": "serverless-framework-deployments-us-east-1-5c9d7fbd-9295",
-          "S3Key": "serverless/meufan-poc/dev/1751460521357-2025-07-02T12:48:41.357Z/meufan-poc.zip"
+          "S3Key": "serverless/meufan-poc/dev/1751539798287-2025-07-03T10:49:58.287Z/meufan-poc.zip"
         },
         "Handler": "handler.get_survey",
         "Runtime": "python3.9",
         "FunctionName": "meufan-poc-dev-get_survey",
         "MemorySize": 1024,
         "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "ONBOARDING_TABLE": "lista_onboarding-dev"
+          }
+        },
         "Role": {
           "Fn::GetAtt": [
             "IamRoleLambdaExecution",
@@ -120,13 +142,18 @@
       "Properties": {
         "Code": {
           "S3Bucket": "serverless-framework-deployments-us-east-1-5c9d7fbd-9295",
-          "S3Key": "serverless/meufan-poc/dev/1751460521357-2025-07-02T12:48:41.357Z/meufan-poc.zip"
+          "S3Key": "serverless/meufan-poc/dev/1751539798287-2025-07-03T10:49:58.287Z/meufan-poc.zip"
         },
         "Handler": "handler.list_surveys",
         "Runtime": "python3.9",
         "FunctionName": "meufan-poc-dev-list_surveys",
         "MemorySize": 1024,
         "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "ONBOARDING_TABLE": "lista_onboarding-dev"
+          }
+        },
         "Role": {
           "Fn::GetAtt": [
             "IamRoleLambdaExecution",
@@ -138,24 +165,24 @@
         "ListUnderscoresurveysLogGroup"
       ]
     },
-    "GetUnderscoresurveyLambdaVersionPVZXXJIyuiTCZuUF4EngrHDkcNZx4huOtSSIVrho8": {
+    "GetUnderscoresurveyLambdaVersionvmG1CzrBzRxmH6kI1YgNv1i7YXWP8GEwN9fMHouNVc": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "GetUnderscoresurveyLambdaFunction"
         },
-        "CodeSha256": "9kEioKrZwUCszwq85OAs8oWwqHhTGOWm5W9hf8zuQMA="
+        "CodeSha256": "mq2f+mpESXtMxbkuf3rbyOijaFa1Ocp+GDscn9UBrbc="
       }
     },
-    "ListUnderscoresurveysLambdaVersiontfy4vqTLWHu9uqt7SAXlWdReBrn7aoffmz7tqLrpFuI": {
+    "ListUnderscoresurveysLambdaVersion6lUltuwoR3plZIwF4fcvV4KZ5x2b4ErCtT8fvoQR4": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "ListUnderscoresurveysLambdaFunction"
         },
-        "CodeSha256": "9kEioKrZwUCszwq85OAs8oWwqHhTGOWm5W9hf8zuQMA="
+        "CodeSha256": "mq2f+mpESXtMxbkuf3rbyOijaFa1Ocp+GDscn9UBrbc="
       }
     },
     "ApiGatewayRestApi": {
@@ -320,7 +347,7 @@
         "Name": "meufan-poc-dev | Validate request body and querystring parameters"
       }
     },
-    "ApiGatewayDeployment1751460511469": {
+    "ApiGatewayDeployment1751539791067": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -347,11 +374,11 @@
           }
         ]
       },
-      "DependsOn": "ApiGatewayDeployment1751460511469"
+      "DependsOn": "ApiGatewayDeployment1751539791067"
     },
     "ApiGatewayUsagePlan": {
       "Type": "AWS::ApiGateway::UsagePlan",
-      "DependsOn": "ApiGatewayDeployment1751460511469",
+      "DependsOn": "ApiGatewayDeployment1751539791067",
       "Properties": {
         "ApiStages": [
           {
@@ -458,6 +485,25 @@
           ]
         }
       }
+    },
+    "OnboardingTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "TableName": "lista_onboarding-dev",
+        "BillingMode": "PAY_PER_REQUEST",
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH"
+          }
+        ]
+      }
     }
   },
   "Outputs": {
@@ -470,7 +516,7 @@
     "GetUnderscoresurveyLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "GetUnderscoresurveyLambdaVersionPVZXXJIyuiTCZuUF4EngrHDkcNZx4huOtSSIVrho8"
+        "Ref": "GetUnderscoresurveyLambdaVersionvmG1CzrBzRxmH6kI1YgNv1i7YXWP8GEwN9fMHouNVc"
       },
       "Export": {
         "Name": "sls-meufan-poc-dev-GetUnderscoresurveyLambdaFunctionQualifiedArn"
@@ -479,7 +525,7 @@
     "ListUnderscoresurveysLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ListUnderscoresurveysLambdaVersiontfy4vqTLWHu9uqt7SAXlWdReBrn7aoffmz7tqLrpFuI"
+        "Ref": "ListUnderscoresurveysLambdaVersion6lUltuwoR3plZIwF4fcvV4KZ5x2b4ErCtT8fvoQR4"
       },
       "Export": {
         "Name": "sls-meufan-poc-dev-ListUnderscoresurveysLambdaFunctionQualifiedArn"

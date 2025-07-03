@@ -89,97 +89,61 @@ class FormularioOnboarding:
             st.error("❌ Por favor, selecione pelo menos uma intenção!")
     
     def render_survey_screen(self):
-        """Renderiza a tela com as questões geradas pela IA"""
+        """Renderiza a tela com os dados gerados pela IA e botões para aprovar, reprovar ou reiniciar"""
         survey = st.session_state.survey
         user_data = st.session_state.user_data
         
         # Cabeçalho
-        st.title("🎯 Suas Questões Personalizadas")
-        st.markdown(f"**Olá, {user_data['nome']}!** Preparamos algumas perguntas especiais para você.")
+        st.title("🤖 Dados Gerados pela IA")
+        st.markdown(f"**Olá, {user_data['nome']}!** Verifique os dados gerados pela IA.")
         st.markdown(f"**Seu perfil:** {survey.title}")
         st.markdown("---")
         
-        # Formulário com as questões
-        with st.form("survey_form"):
-            st.subheader("📝 Responda às perguntas abaixo:")
-            
-            responses = {}
-            
-            # Perguntas do perfil
-            if survey.profile_questions:
-                st.markdown("### 🎭 Perguntas sobre seu perfil:")
-                for i, question in enumerate(survey.profile_questions):
-                    responses[f"profile_{i}"] = st.text_area(
-                        f"**{i+1}.** {question}",
-                        key=f"profile_q_{i}",
-                        height=100
-                    )
-            
-            # Perguntas gerais
-            if survey.general_questions:
-                st.markdown("### 💭 Perguntas gerais:")
-                for i, question in enumerate(survey.general_questions):
-                    responses[f"general_{i}"] = st.text_area(
-                        f"**{i+1}.** {question}",
-                        key=f"general_q_{i}",
-                        height=100
-                    )
-            
-            # Perguntas de consumo (se aplicável)
-            if survey.customer_profile and survey.customer_questions:
-                st.markdown("### 🛍️ Perguntas sobre consumo:")
-                for i, question in enumerate(survey.customer_questions):
-                    responses[f"customer_{i}"] = st.text_area(
-                        f"**{i+1}.** {question}",
-                        key=f"customer_q_{i}",
-                        height=100
-                    )
-            
-            # Botões de ação
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.form_submit_button("📤 Enviar Respostas", type="primary"):
-                    self.process_survey_responses(responses)
-            
-            with col2:
-                if st.form_submit_button("🔄 Gerar Novas Questões"):
-                    st.session_state.survey_generated = False
-                    st.rerun()
+        # Exibir dados gerados pela IA (sem inputs para edição)
+        st.subheader("📊 Dados Gerados:")
         
-        # Mostrar informações adicionais
-        self.show_survey_info(survey)
-    
-    def process_survey_responses(self, responses: dict):
-        """Processa as respostas da survey"""
-        # Filtrar respostas vazias
-        filled_responses = {k: v for k, v in responses.items() if v.strip()}
+        # Perguntas do perfil
+        if survey.profile_questions:
+            st.markdown("### 🎭 Perguntas sobre seu perfil:")
+            for i, question in enumerate(survey.profile_questions):
+                st.info(f"**{i+1}.** {question}")
         
-        if not filled_responses:
-            st.error("❌ Por favor, responda pelo menos uma pergunta!")
-            return
+        # Perguntas gerais
+        if survey.general_questions:
+            st.markdown("### 💭 Perguntas gerais:")
+            for i, question in enumerate(survey.general_questions):
+                st.info(f"**{i+1}.** {question}")
         
-        try:
-            # Aqui você pode salvar as respostas ou processá-las
-            st.success("✅ Respostas enviadas com sucesso!")
-            st.balloons()
-            
-            # Mostrar resumo das respostas
-            st.markdown("### 📊 Suas respostas:")
-            for key, value in filled_responses.items():
-                st.write(f"**{key}:** {value[:100]}{'...' if len(value) > 100 else ''}")
-            
-            # Opção para reiniciar
-            if st.button("🏠 Voltar ao início"):
+        # Perguntas de consumo (se aplicável)
+        if survey.customer_profile and survey.customer_questions:
+            st.markdown("### 🛍️ Perguntas sobre consumo:")
+            for i, question in enumerate(survey.customer_questions):
+                st.info(f"**{i+1}.** {question}")
+        
+        st.markdown("---")
+        
+        # Botões de ação em 3 colunas
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("✅ Aprovar", type="primary"):
+                st.success("Dados aprovados com sucesso!")
+                # Aqui você pode adicionar lógica para salvar os dados aprovados
+        
+        with col2:
+            if st.button("❌ Reprovar", type="secondary"):
+                st.error("Dados reprovados.")
+                # Aqui você pode adicionar lógica para tratar a reprovação
+        
+        with col3:
+            if st.button("🔄 Reiniciar"):
+                # Reiniciar o processo voltando para o formulário inicial
                 for key in list(st.session_state.keys()):
                     del st.session_state[key]
                 st.rerun()
-                
-        except Exception as e:
-            st.error(f"Erro ao processar respostas: {e}")
-    
-    def show_survey_info(self, survey):
-        """Mostra informações adicionais sobre a survey"""
-        with st.expander("ℹ️ Informações da Survey"):
+        
+        # Mostrar informações adicionais
+        with st.expander("ℹ️ Informações da IA"):
             st.write(f"**Perfil do consumidor:** {'Sim' if survey.customer_profile else 'Não'}")
             st.write(f"**Tags de interesse:** {', '.join([tag.value for tag in survey.interest_tags])}")
-            st.write(f"**Total de perguntas:** {len(survey.profile_questions) + len(survey.general_questions) + len(survey.customer_questions)}")
+            st.write(f"**Total de perguntas geradas:** {len(survey.profile_questions) + len(survey.general_questions) + len(survey.customer_questions)}")

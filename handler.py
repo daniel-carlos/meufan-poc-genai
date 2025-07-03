@@ -48,9 +48,9 @@ def list_surveys(event, context):
         
         # Dados fictícios para exemplo
         surveys = [
-            {"id": "123", "title": "Customer Satisfaction Survey"},
-            {"id": "456", "title": "Product Feedback Survey"},
-            {"id": "789", "title": "Website Usability Survey"}
+            {"id": "123", "title": "Músico apaixonado por discos antigos"},
+            {"id": "456", "title": "Criador de conteúdo digital e hippie"},
+            {"id": "789", "title": "Amante de cachorros"}
         ]
         
         return {
